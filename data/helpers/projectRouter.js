@@ -21,6 +21,17 @@ const validateId = (req,res,next) => {
     })    
 }
 
+const validateBody = (req,res,next) => {
+    const body = req.body
+
+    if (!body.description || !body.name){
+        next({code:400, message: "you must have a description and name"})
+    }else{
+        req.payload = body
+        next()
+    }
+}
+
 router.use((req, res, next) => {
     console.log('inside the project router');
     next();
@@ -36,7 +47,45 @@ router.get('/:id',validateId,(req,res) => {
     res.status(200).json(req.project)
 })
 
-// router.post('/',(req,res))
+router.post('/',validateBody,(req,res) => {
+    Project.insert(req.payload)
+    .then(data => {
+        res.status(201).json(data)
+    })
+    .catch(error => {
+        res.status(500).json({message:"Something went horribly wrong"})
+    })
+})
+
+router.put('/:id',validateId,validateBody,(req,res) => {
+    Project.update(req.params.id,req.body)
+    .then(data => {
+        res.status(201).json(data)
+    })
+    .catch(error => {
+        res.status(500).json({message:"Something went horribly wrong"})
+    })
+})
+
+router.delete('/:id', validateId, (req,res) => {
+    Project.remove(req.params.id)
+    .then(data => {
+        res.status(200).json(data)
+    })
+    .catch(error => {
+        res.status(500).json({message:"Something wen horribly wrong"})
+    })
+})
+
+router.get('/:id/actions',validateId,(req,res) => {
+    Project.getProjectActions(req.params.id)
+    .then(data => {
+        res.status(200).json(data)
+    })
+    .catch(error => {
+        res.status(500).json({message:"Something wen horribly wrong"})
+    })
+})
 
 router.use((err, req, res, next) => {
     res.status(err.code).json({ message: err.message })
