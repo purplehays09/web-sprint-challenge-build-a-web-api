@@ -10,7 +10,7 @@ const validateId = (req,res,next) => {
     Action.get(id)
     .then(data => {
         if (data) {
-            req.actionId = data;
+            req.action = data;
             next()
         }else{
             next({ code: 400, message: 'There is no action with id ' + id })
@@ -26,10 +26,12 @@ router.use((req, res, next) => {
     next();
 });
 
-
+router.get('/:id',validateId,(req,res) => {
+    res.status(200).json(req.action)
+})
 
 router.use((err, req, res, next) => {
     res.status(err.code).json({ message: err.message })
-  });
+});
 
 module.exports = router;
